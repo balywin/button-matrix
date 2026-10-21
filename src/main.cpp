@@ -91,7 +91,7 @@ void setup() {
 
   // Начално състояние: Ненатиснат бутон (Максимално съпротивление)
   setPotentiometer(IDLE_RESISTANCE);
-  Serial.println(F("Системата е готова. MCP4241 POT1 е в начално състояние."));
+  Serial.println(F("Adapter ready. MCP4241 POT1 initialized."));
 }
 
 void loop() {
