@@ -12,7 +12,13 @@ const byte WRITE_WIPER_0 = 0x00;  // Адрес на Wiper 1 (POT2 / P0W) за M
 const byte WRITE_WIPER_1 = 0x10;  // Адрес на Wiper 2 (POT2 / P1W) за MCP4241
 const byte IDLE_RESISTANCE = 127; // Максимално съпротивление при липса на натиснат бутон (Отворен верига)
 
-const int ANALOG_PIN = A3;
+// TCON регистър (адрес 0x04): управление на свързването на терминалите A/W/B
+const byte WRITE_TCON = 0x41;         // Адрес 0x04, команда Write, D8 = 1 (резервиран бит)
+const byte TCON_ALL_CONNECTED = 0xFF; // Всички терминали на двата потенциометъра свързани
+const byte TCON_R1W = 0x20;           // Бит R1W - свързва Wiper 1 (P1W) към резисторната стълба
+
+const int ANALOG_PIN1 = A3;
+const int ANALOG_PIN2 = A2;
 
 // ==========================================
 // 2. КОНФИГУРАЦИЯ НА 4x3 МАТРИЦАТА
@@ -51,6 +57,18 @@ static void setPotentiometer(byte level) {
 }
 
 // ==========================================
+// 3.1. СВЪРЗВАНЕ / ИЗКЛЮЧВАНЕ НА WIPER 1 ОТ РЕЗИСТОРНАТА СТЪЛБА (TCON)
+// ==========================================
+static void setWiper1Connected(bool connected) {
+  const byte tcon = connected ? TCON_ALL_CONNECTED : (TCON_ALL_CONNECTED & ~TCON_R1W);
+
+  digitalWrite(CS_PIN, LOW);
+  SPIClass::transfer(WRITE_TCON);
+  SPIClass::transfer(tcon);
+  digitalWrite(CS_PIN, HIGH);
+}
+
+// ==========================================
 // 4. МАРШРУТИЗАЦИЯ НА БУТОНИ КЪМ СТОЙНОСТИ (0-127)
 // ==========================================
 byte getResistanceForKey(char key) {
@@ -80,7 +98,8 @@ void setup() {
   // Настройка на CS пина за SPI
   pinMode(CS_PIN, OUTPUT);
   digitalWrite(CS_PIN, HIGH);
-  pinMode(ANALOG_PIN, INPUT);
+  pinMode(ANALOG_PIN1, INPUT);
+  pinMode(ANALOG_PIN2, INPUT);
 
   // Настройка на Debounce времетраене за матрицата (в милисекунди)
   // Библиотеката Keypad използва неблокиращ софтуерен анти-реблек (Debounce)
@@ -89,8 +108,9 @@ void setup() {
   // Стартиране на SPI шината
   SPIClass::begin();
 
-  // Начално състояние: Ненатиснат бутон (Максимално съпротивление)
+  // Начално състояние: Ненатиснат бутон (Wiper 1 изключен от стълбата)
   setPotentiometer(IDLE_RESISTANCE);
+  setWiper1Connected(false);
   Serial.println(F("Adapter ready. MCP4241 POT1 initialized."));
 }
 
@@ -103,6 +123,7 @@ void loop() {
   if (key != NO_KEY && state == PRESSED) {
     const byte resistanceVal = getResistanceForKey(key);
     setPotentiometer(resistanceVal);
+    setWiper1Connected(true);
 
 #ifdef DEBUG_MESSAGES
     Serial.print(F("Button pressed: "));
@@ -124,6 +145,7 @@ void loop() {
     Serial.print(F("  Idling..."));
     Serial.println(key);
 #endif    
+    setWiper1Connected(false);
     setPotentiometer(IDLE_RESISTANCE);
     justReleased = false;
   }

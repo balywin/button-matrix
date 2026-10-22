@@ -32,3 +32,13 @@ Arduino should be connected to entertainment system (Junsun) as follows:
 |              | GPIO     | pin 13 SDO           |                   |
 |              | pullup R | pin 12 SHDN\         |                   |
 |              | pullup R | pin 11 WP\           |                   |
+
+### Matrix buttons
+
+Pin numbering - looked from the back
+
+| pin/pin | 3   | 4  | 5    | 6    |
+|---------|-----|----|------|------|
+| 7       | 1   | 6  | RDS  | 5    |
+| 8       | UML | AS | TP   | Vol- |
+| 9       | 3   | 4  | Vol+ | 2    |
