@@ -3,5 +3,7 @@
   <component name="ArduinoSettingsState">
     <option name="espIdfPath" value="$USER_HOME$/esp/esp-idf" />
     <option name="arduinoCliPath" value="/opt/homebrew/bin/arduino-cli" />
+    <option name="comPort" value="cu.usbserial-0001" />
+    <option name="serialPort" value="cu.usbserial-0001" />
   </component>
 </project>
